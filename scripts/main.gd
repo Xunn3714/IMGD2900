@@ -29,6 +29,8 @@ const TRACK_Y: float = 226.0
 @onready var result_title: Label = $Result/Title
 
 var hit_center: float = 484.0
+var hit_zone_speed: float = 110.0
+var hit_zone_direction: float = 1.0
 var rules = Rules.new()
 var textures: Dictionary = {}
 var bag: Array[StringName] = []
@@ -41,7 +43,9 @@ var quit_on_game_over: bool = true
 func _ready() -> void:
 	$CustomerWindow/Customer.texture = customer_art
 	textures = {&"orange": orange_art, &"soda": soda_art, &"cherry": cherry_art}
-	_teleporting_hit_zone()
+	hit_zone_speed = randf_range(140.0, 300.0)
+	hit_zone_direction = 1.0 if randf() < 0.5 else -1.0
+	hit_zone.position = Vector2(hit_center - hit_width * 0.5, 198.0)
 	hit_zone.size = Vector2(hit_width, 56.0)
 	start_round()
 
@@ -66,6 +70,7 @@ func _process(delta: float) -> void:
 	if rules.finished:
 		restart_delay = maxf(0.0, restart_delay - delta)
 		return
+	_moving_hit_zone(delta)
 	elapsed += delta
 	timer_label.text = "%ds" % maxi(0, ceili(round_duration - elapsed))
 	if elapsed >= round_duration:
@@ -107,7 +112,6 @@ func _spawn_ingredient(kind: StringName) -> Node2D:
 	ingredient_container.add_child(item)
 	item.configure(kind, textures[kind], ingredient_speed)
 	item.position = Vector2(12.0, TRACK_Y)
-	_teleporting_hit_zone()
 	return item
 
 func select_ingredient() -> void:
@@ -168,11 +172,22 @@ func _show_result() -> void:
 	result_title.text = "Order ready!" if rules.is_success() else "Time's up!"
 	print("ALPHA_CUP selected=%s mistakes=%d success=%s" % [rules.selected, rules.mistakes, rules.is_success()])
 
-func _teleporting_hit_zone() -> void:
+func _moving_hit_zone(delta: float) -> void:
 	var min_center := TRACK_LEFT + hit_width * 0.5
 	var max_center := TRACK_RIGHT - hit_width * 0.5
-	hit_center = randf_range(min_center, max_center)
-	hit_zone.position = Vector2(hit_center - hit_width * 0.5, 198)
+
+	hit_center += hit_zone_direction * hit_zone_speed * delta
+	
+	if hit_center <= min_center:
+		hit_center = min_center
+		hit_zone_direction = 1.0
+		hit_zone_speed = randf_range(140.0, 300.0)
+	elif hit_center >= max_center:
+		hit_center = max_center
+		hit_zone_direction = -1.0
+		hit_zone_speed = randf_range(140.0, 300.0)
+		
+	hit_zone.position = Vector2(hit_center - hit_width * 0.5, 198.0)
 
 func _clear_ingredients() -> void:
 	for item in ingredient_container.get_children():
