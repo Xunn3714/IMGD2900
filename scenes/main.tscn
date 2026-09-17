@@ -1,7 +1,12 @@
 [gd_scene format=3 uid="uid://b38j0w2fi6tkd"]
 
 [ext_resource type="Script" uid="uid://dkkve10tsc1dk" path="res://scripts/main.gd" id="1"]
-[ext_resource type="Texture2D" uid="uid://cucwdkfu2f5fn" path="res://icon.svg" id="2"]
+[ext_resource type="Texture2D" path="res://art/customers/blue_bear.png" id="2"]
+[ext_resource type="Texture2D" path="res://art/customers/brown_bear.png" id="customer_brown"]
+[ext_resource type="Texture2D" path="res://art/customers/bunny.png" id="customer_bunny"]
+[ext_resource type="Texture2D" path="res://art/customers/froish.png" id="customer_froish"]
+[ext_resource type="Script" path="res://scripts/customer_portrait.gd" id="customer_script"]
+[ext_resource type="Texture2D" path="res://art/placeholders/thought_bubble.svg" id="thought_bubble"]
 
 [sub_resource type="StyleBoxFlat" id="WindowStyle"]
 bg_color = Color(0.72, 0.83, 0.81, 1)
@@ -34,6 +39,7 @@ offset_right = 640.0
 offset_bottom = 360.0
 mouse_filter = 2
 script = ExtResource("1")
+customer_art = ExtResource("2")
 
 [node name="Background" type="ColorRect" parent="." unique_id=547804529]
 layout_mode = 0
@@ -53,6 +59,7 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("WindowStyle")
 
 [node name="Customer" type="TextureRect" parent="CustomerWindow" unique_id=37254788]
+texture_filter = 1
 layout_mode = 0
 offset_left = 48.0
 offset_top = 58.0
@@ -62,20 +69,36 @@ mouse_filter = 2
 texture = ExtResource("2")
 expand_mode = 1
 stretch_mode = 5
+script = ExtResource("customer_script")
+portraits = Array[Texture2D]([ExtResource("2"), ExtResource("customer_brown"), ExtResource("customer_bunny"), ExtResource("customer_froish")])
 
-[node name="OrderBubble" type="Panel" parent="CustomerWindow" unique_id=1104638358]
+[node name="OrderBubble" type="TextureRect" parent="CustomerWindow" unique_id=1104638358]
 layout_mode = 0
-offset_left = 176.0
-offset_top = 42.0
+offset_left = 144.0
+offset_top = 18.0
 offset_right = 264.0
-offset_bottom = 74.0
+offset_bottom = 114.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("BoxStyle")
+texture = ExtResource("thought_bubble")
+expand_mode = 1
+
+[node name="DrinkImage" type="TextureRect" parent="CustomerWindow/OrderBubble"]
+visible = false
+layout_mode = 0
+offset_left = 30.0
+offset_top = 10.0
+offset_right = 90.0
+offset_bottom = 60.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Text" type="Label" parent="CustomerWindow/OrderBubble" unique_id=332785723]
 layout_mode = 0
-offset_right = 88.0
-offset_bottom = 32.0
+offset_left = 8.0
+offset_top = 12.0
+offset_right = 112.0
+offset_bottom = 60.0
 theme_override_colors/font_color = Color(0.3, 0.24, 0.2, 1)
 theme_override_font_sizes/font_size = 12
 text = "Orange soda"
