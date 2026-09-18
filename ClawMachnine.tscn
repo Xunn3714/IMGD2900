@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://bw26i72q87750"]
+
+[ext_resource type="Texture2D" uid="uid://bu17brjd6w78u" path="res://icon.svg" id="1_mh5uj"]
+[ext_resource type="Script" uid="uid://datt5fis8ucas" path="res://Claw.gd" id="2_e5pvl"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mh5uj"]
+size = Vector2(128, 128)
+
+[node name="Node2D" type="Node2D"]
+
+[node name="ClawMachine2D" type="CharacterBody2D" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="ClawMachine2D"]
+texture = ExtResource("1_mh5uj")
+script = ExtResource("2_e5pvl")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ClawMachine2D"]
+shape = SubResource("RectangleShape2D_mh5uj")
