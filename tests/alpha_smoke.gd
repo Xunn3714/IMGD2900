@@ -24,12 +24,22 @@ func pick(scene: Control, kind: StringName, x: float = 484.0) -> void:
 	press(scene)
 
 func _run() -> void:
+	for fruit in Rules.FRUIT_KINDS:
+		for recipe in [[fruit, &"soda"], [&"soda", fruit]]:
+			var flavor_model = Rules.new()
+			flavor_model.start_cup(fruit)
+			check(flavor_model.select(recipe[0]) == Rules.Selection.CORRECT, "First ingredient accepted for %s" % fruit)
+			flavor_model.select(recipe[1])
+			check(flavor_model.is_success(), "%s soda works in both orders" % fruit)
 	for recipe in [[&"orange", &"soda"], [&"soda", &"orange"]]:
 		var model = Rules.new()
 		check(model.select(recipe[0]) == Rules.Selection.CORRECT, "First correct ingredient")
 		check(not model.finished, "One correct selection keeps playing")
 		model.select(recipe[1])
 		check(model.is_success(), "Both recipe orders succeed")
+	var wrong_flavor_model = Rules.new()
+	wrong_flavor_model.start_cup(&"blueberry")
+	check(wrong_flavor_model.select(&"orange") == Rules.Selection.MISTAKE, "A fruit from another order is a mistake")
 	var model = Rules.new()
 	check(model.select(&"unknown") == Rules.Selection.IGNORED, "Unknown kinds ignored")
 	model.select(&"orange")
@@ -51,8 +61,11 @@ func _run() -> void:
 	check(scene.get_node("CustomerWindow/Customer").texture.resource_path == "res://art/customers/blue_bear.png", "Default customer uses Blue Bear")
 	check(scene.get_node("Track/Rail") is ColorRect and scene.hit_zone.color.g > scene.hit_zone.color.r, "Separate gray rail and green zone")
 	check(scene.get_node("Cup").size == Vector2(60, 90), "Rectangle cup keeps 60x90 dimensions")
+	var first_order: StringName = scene.current_fruit
+	check(scene.order_fruits.has(first_order), "First order randomly chooses a supported fruit")
+	check(scene.order_image.texture == scene.finished_drinks[first_order], "Thinking bubble matches the random order")
 	scene._clear_ingredients()
-	var item = scene._spawn_ingredient(&"orange")
+	var item = scene._spawn_ingredient(first_order)
 	item.position.x = 451.9
 	press(scene)
 	check(scene.rules.selected.is_empty() and scene.rules.mistakes == 0, "Timing miss is not a wrong-item strike")
@@ -61,18 +74,34 @@ func _run() -> void:
 	press(scene, false, KEY_ENTER)
 	check(scene.rules.selected.is_empty(), "Held key and Enter cannot select")
 	press(scene)
-	check(scene.rules.selected.size() == 1 and scene.fruit_container.get_child_count() == 1, "Space accepts left boundary and puts circle inside cup")
+	check(scene.rules.selected.size() == 1 and scene.fruit_container.get_child_count() == 0 and not scene.drink.visible, "Fruit-first selection leaves the cup empty")
+	check(scene.selection_slots[0].visible and scene.selection_slots[0].texture == scene.selection_icons[first_order], "Selected fruit shows its syrup beside the cup")
 	pick(scene, &"cherry")
 	check(scene.rules.mistakes == 1 and not scene.rules.finished and exit_count == 0, "First wrong item does not quit")
+	check(scene.selection_slots[1].visible and scene.selection_slots[1].texture == scene.cherry_syrup_art, "Wrong fruit also leaves its syrup beside the cup")
 	check(scene.get_node_or_null("Feedback") == null and scene.get_node_or_null("Mistakes") == null, "No action feedback or error-count text")
 	pick(scene, &"soda", 516.0)
-	check(scene.rules.is_success() and scene.result_panel.visible and scene.liquid.visible, "Right boundary completes cup automatically")
+	check(scene.rules.is_success() and scene.result_panel.visible and scene.drink.visible, "Right boundary completes cup with matching soda art")
+	check(scene.drink.texture == scene.finished_drinks[first_order], "Finished cup matches the random order")
+	check(scene.selection_slots[2].visible and scene.selection_slots[2].texture == scene.soda_art, "Selected soda shows after the wrong selection")
+	check(scene.get_node("Cup").position.x < 454.0 and scene.selection_slots[0].position.x > scene.get_node("Cup").position.x + scene.get_node("Cup").size.x, "Cup moves left to make room for three selection icons")
 	scene.restart_delay = 0.0
 	press(scene, true)
 	check(scene.rules.finished, "Holding Space cannot restart")
 	press(scene)
 	check(not scene.rules.finished and scene.rules.mistakes == 1, "Same key starts next cup with mistakes preserved")
-	check(scene.fruit_container.get_child_count() == 0 and not scene.liquid.visible, "Next cup clears its contents")
+	var second_order: StringName = scene.current_fruit
+	check(scene.order_fruits.has(second_order) and second_order != first_order, "Next order is random without an immediate repeat")
+	check(scene.order_image.texture == scene.finished_drinks[second_order], "Next thinking bubble matches its order")
+	check(scene.fruit_container.get_child_count() == 0 and not scene.drink.visible, "Next cup clears its contents")
+	check(not scene.selection_slots[0].visible and not scene.selection_slots[1].visible and not scene.selection_slots[2].visible and scene.displayed_choice_count == 0, "Next cup clears all three selection icons")
+	scene._clear_ingredients()
+	pick(scene, second_order)
+	pick(scene, &"soda")
+	check(scene.rules.is_success() and scene.drink.texture == scene.finished_drinks[second_order], "Second random order uses matching finished art")
+	scene.restart_delay = 0.0
+	press(scene)
+	check(scene.current_fruit != second_order, "Third random order also avoids an immediate repeat")
 	scene.elapsed = scene.round_duration - 0.01
 	scene._process(0.02)
 	check(scene.rules.timed_out and scene.rules.mistakes == 1, "Timeout does not add or reset mistakes")
@@ -86,7 +115,7 @@ func _run() -> void:
 	scene.queue_free()
 	await process_frame
 	if failures.is_empty():
-		print("ALPHA_SMOKE_PASS: simple placeholders, one-key input, boundaries, cup, first mistake, persistent second-mistake exit")
+		print("ALPHA_SMOKE_PASS: four fruit recipes, random orders, all choice icons, art, input, mistakes, exit")
 		quit(0)
 	else:
 		quit(1)

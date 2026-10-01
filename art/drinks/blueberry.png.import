@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://rct2ta3draki"
-path="res://.godot/imported/orange.svg-c748b4634d27991d87ed2c2b4a16a252.ctex"
+uid="uid://b8wockhopkbxm"
+path="res://.godot/imported/blueberry.png-e7b0b88fcdc5b5746513d879710965c4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/placeholders/orange.svg"
-dest_files=["res://.godot/imported/orange.svg-c748b4634d27991d87ed2c2b4a16a252.ctex"]
+source_file="res://art/drinks/blueberry.png"
+dest_files=["res://.godot/imported/blueberry.png-e7b0b88fcdc5b5746513d879710965c4.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

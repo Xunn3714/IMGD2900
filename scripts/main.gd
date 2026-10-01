@@ -16,14 +16,29 @@ const TRACK_Y: float = 226.0
 
 @export_group("Replaceable artwork")
 @export var customer_art: Texture2D = preload("res://icon.svg")
-@export var orange_art: Texture2D = preload("res://art/placeholders/orange.svg")
-@export var soda_art: Texture2D = preload("res://art/placeholders/soda.svg")
-@export var cherry_art: Texture2D = preload("res://art/placeholders/cherry.svg")
+@export var orange_art: Texture2D = preload("res://art/drinks/orange.png")
+@export var soda_art: Texture2D = preload("res://art/drinks/soda_base.png")
+@export var cherry_art: Texture2D = preload("res://art/drinks/cherry.png")
+@export var blueberry_art: Texture2D = preload("res://art/drinks/blueberry.png")
+@export var strawberry_art: Texture2D = preload("res://art/drinks/strawberry.png")
+@export var grape_art: Texture2D = preload("res://art/drinks/grape.png")
+@export var soda_liquid_art: Texture2D = preload("res://art/drinks/soda_liquid.png")
+@export var orange_soda_art: Texture2D = preload("res://art/drinks/orange_soda.png")
+@export var blueberry_soda_art: Texture2D = preload("res://art/drinks/blueberry_soda.png")
+@export var strawberry_soda_art: Texture2D = preload("res://art/drinks/strawberry_soda.png")
+@export var grape_soda_art: Texture2D = preload("res://art/drinks/grape_soda.png")
+@export var orange_syrup_art: Texture2D = preload("res://art/drinks/orange_syrup.png")
+@export var blueberry_syrup_art: Texture2D = preload("res://art/drinks/blueberry_syrup.png")
+@export var strawberry_syrup_art: Texture2D = preload("res://art/drinks/strawberry_syrup.png")
+@export var grape_syrup_art: Texture2D = preload("res://art/drinks/grape_syrup.png")
+@export var cherry_syrup_art: Texture2D = preload("res://art/drinks/cherry_syrup.png")
 
 @onready var hit_zone: ColorRect = $Track/HitZone
 @onready var ingredient_container: Node2D = $Track/Clip/Ingredients
-@onready var liquid: ColorRect = $Cup/Contents/Liquid
-@onready var fruit_container: Control = $Cup/Contents/Fruits
+@onready var drink: TextureRect = $Cup/Drink
+@onready var fruit_container: Control = $Cup/Fruits
+@onready var order_image: TextureRect = $CustomerWindow/OrderBubble/DrinkImage
+@onready var selection_slots: Array[TextureRect] = [$SelectedIngredients/Slot1, $SelectedIngredients/Slot2, $SelectedIngredients/Slot3]
 @onready var timer_label: Label = $TimeRemaining
 @onready var result_panel: Panel = $Result
 @onready var result_title: Label = $Result/Title
@@ -33,6 +48,11 @@ var hit_zone_speed: float = 110.0
 var hit_zone_direction: float = 1.0
 var rules = Rules.new()
 var textures: Dictionary = {}
+var finished_drinks: Dictionary = {}
+var selection_icons: Dictionary = {}
+var order_fruits: Array[StringName] = [&"orange", &"blueberry", &"strawberry", &"grape"]
+var current_fruit: StringName = &""
+var displayed_choice_count: int = 0
 var bag: Array[StringName] = []
 var spawn_elapsed: float = 0.0
 var elapsed: float = 0.0
@@ -42,7 +62,20 @@ var quit_on_game_over: bool = true
 
 func _ready() -> void:
 	$CustomerWindow/Customer.texture = customer_art
-	textures = {&"orange": orange_art, &"soda": soda_art, &"cherry": cherry_art}
+	textures = {
+		&"orange": orange_art, &"blueberry": blueberry_art,
+		&"strawberry": strawberry_art, &"grape": grape_art,
+		&"soda": soda_art, &"cherry": cherry_art,
+	}
+	finished_drinks = {
+		&"orange": orange_soda_art, &"blueberry": blueberry_soda_art,
+		&"strawberry": strawberry_soda_art, &"grape": grape_soda_art,
+	}
+	selection_icons = {
+		&"orange": orange_syrup_art, &"blueberry": blueberry_syrup_art,
+		&"strawberry": strawberry_syrup_art, &"grape": grape_syrup_art,
+		&"cherry": cherry_syrup_art, &"soda": soda_art,
+	}
 	hit_zone_speed = randf_range(140.0, 300.0)
 	hit_zone_direction = 1.0 if randf() < 0.5 else -1.0
 	hit_zone.position = Vector2(hit_center - hit_width * 0.5, 198.0)
@@ -56,15 +89,23 @@ func start_round() -> void:
 	for child in fruit_container.get_children():
 		fruit_container.remove_child(child)
 		child.queue_free()
-	rules.start_cup()
+	var available_orders: Array[StringName] = order_fruits.duplicate()
+	available_orders.erase(current_fruit)
+	current_fruit = available_orders.pick_random()
+	rules.start_cup(current_fruit)
+	order_image.texture = finished_drinks[current_fruit]
+	for slot in selection_slots:
+		slot.texture = null
+		slot.visible = false
+	displayed_choice_count = 0
 	bag.clear()
 	spawn_elapsed = 0.0
 	elapsed = 0.0
 	restart_delay = 0.0
-	liquid.visible = false
+	drink.visible = false
 	result_panel.visible = false
 	timer_label.text = "%ds" % ceili(round_duration)
-	_spawn_ingredient(&"orange")
+	_spawn_ingredient(current_fruit)
 
 func _process(delta: float) -> void:
 	if rules.finished:
@@ -100,9 +141,11 @@ func _input(event: InputEvent) -> void:
 
 func _next_kind() -> StringName:
 	if bag.is_empty():
-		bag.assign([&"orange", &"soda", &"orange", &"soda"])
+		bag.assign([current_fruit, current_fruit, &"soda", &"soda"])
 		if distractors_enabled:
-			bag.append(&"cherry")
+			for fruit in order_fruits:
+				if fruit != current_fruit:
+					bag.append(fruit)
 			bag.append(&"cherry")
 		bag.shuffle()
 	return bag.pop_back()
@@ -130,6 +173,7 @@ func select_ingredient() -> void:
 	var outcome: int = rules.select(kind)
 	ingredient_container.remove_child(candidate)
 	candidate.queue_free()
+	_show_selected_icon(kind)
 	if outcome == Rules.Selection.GAME_OVER:
 		_clear_ingredients()
 		print("ALPHA_GAME_OVER: selected two wrong ingredients; quitting")
@@ -148,22 +192,19 @@ func select_ingredient() -> void:
 
 func _show_in_cup(kind: StringName) -> void:
 	if kind == &"soda":
-		liquid.visible = true
-		liquid.color = Color("9ecde0")
-		if rules.selected.has(&"orange"):
-			liquid.color = Color("f6b34a")
+		drink.texture = finished_drinks[current_fruit] if rules.selected.has(current_fruit) else soda_liquid_art
+		drink.visible = true
 		return
 	if rules.selected.has(&"soda"):
-		liquid.color = Color("f6b34a")
-	var fruit := TextureRect.new()
-	fruit.name = "Orange"
-	fruit.texture = textures[kind]
-	fruit.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	fruit.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	fruit.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	fruit.position = Vector2(14.0, 53.0)
-	fruit.size = Vector2(24.0, 24.0)
-	fruit_container.add_child(fruit)
+		drink.texture = finished_drinks[current_fruit]
+		drink.visible = true
+
+func _show_selected_icon(kind: StringName) -> void:
+	if displayed_choice_count >= selection_slots.size() or not selection_icons.has(kind):
+		return
+	selection_slots[displayed_choice_count].texture = selection_icons[kind]
+	selection_slots[displayed_choice_count].visible = true
+	displayed_choice_count += 1
 
 func _show_result() -> void:
 	_clear_ingredients()

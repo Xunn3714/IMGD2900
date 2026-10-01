@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d3ibolilf2edb"
-path="res://.godot/imported/soda.svg-3f25c7eb5805bbddcf8e452463246085.ctex"
+uid="uid://phkwl2bkpy57"
+path="res://.godot/imported/strawberry.png-6c86581c74e17dd98932105f75c2b188.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/placeholders/soda.svg"
-dest_files=["res://.godot/imported/soda.svg-3f25c7eb5805bbddcf8e452463246085.ctex"]
+source_file="res://art/drinks/strawberry.png"
+dest_files=["res://.godot/imported/strawberry.png-6c86581c74e17dd98932105f75c2b188.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false
