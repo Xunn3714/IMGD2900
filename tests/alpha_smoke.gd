@@ -66,15 +66,18 @@ func _run() -> void:
 	check(scene.order_image.texture == scene.finished_drinks[first_order], "Thinking bubble matches the random order")
 	scene._clear_ingredients()
 	var item = scene._spawn_ingredient(first_order)
-	item.position.x = 451.9
+	var visual: Sprite2D = item.get_node("Visual")
+	var ingredient_half_width: float = visual.texture.get_width() * absf(visual.scale.x) * 0.5
+	var left_hit_boundary: float = scene.hit_center - scene.hit_width * 0.5 - scene.hit_tolerance - ingredient_half_width
+	item.position.x = left_hit_boundary - 0.1
 	press(scene)
 	check(scene.rules.selected.is_empty() and scene.rules.mistakes == 0, "Timing miss is not a wrong-item strike")
-	item.position.x = 452.0
+	item.position.x = left_hit_boundary
 	press(scene, true)
 	press(scene, false, KEY_ENTER)
 	check(scene.rules.selected.is_empty(), "Held key and Enter cannot select")
 	press(scene)
-	check(scene.rules.selected.size() == 1 and scene.fruit_container.get_child_count() == 0 and not scene.drink.visible, "Fruit-first selection leaves the cup empty")
+	check(scene.rules.selected.size() == 1 and scene.fruit_container.get_child_count() == 0 and not scene.drink.visible, "Visible fruit overlap is accepted and fruit-first leaves the cup empty")
 	check(scene.selection_slots[0].visible and scene.selection_slots[0].texture == scene.selection_icons[first_order], "Selected fruit shows its syrup beside the cup")
 	pick(scene, &"cherry")
 	check(scene.rules.mistakes == 1 and not scene.rules.finished and exit_count == 0, "First wrong item does not quit")

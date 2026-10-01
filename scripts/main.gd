@@ -11,6 +11,7 @@ const TRACK_Y: float = 226.0
 @export_range(60.0, 240.0, 5.0) var ingredient_speed: float = 120.0
 @export_range(0.8, 3.0, 0.1) var spawn_interval: float = 1.5
 @export_range(32.0, 120.0, 8.0) var hit_width: float = 64.0
+@export_range(0.0, 16.0, 1.0) var hit_tolerance: float = 4.0
 @export_range(15.0, 120.0, 5.0) var round_duration: float = 45.0
 @export var distractors_enabled: bool = true
 
@@ -164,7 +165,7 @@ func select_ingredient() -> void:
 	var nearest: float = INF
 	for item in ingredient_container.get_children():
 		var distance: float = absf(item.position.x - hit_center)
-		if distance <= hit_width * 0.5 and distance < nearest:
+		if _ingredient_overlaps_hit_zone(item) and distance < nearest:
 			candidate = item
 			nearest = distance
 	if candidate == null:
@@ -189,6 +190,17 @@ func select_ingredient() -> void:
 	_show_in_cup(kind)
 	if rules.finished:
 		_show_result()
+
+func _ingredient_overlaps_hit_zone(item: Node2D) -> bool:
+	var visual: Sprite2D = item.get_node_or_null("Visual") as Sprite2D
+	var ingredient_half_width: float = 0.0
+	if visual != null and visual.texture != null:
+		ingredient_half_width = visual.texture.get_width() * absf(visual.scale.x) * 0.5
+	var zone_left: float = hit_center - hit_width * 0.5 - hit_tolerance
+	var zone_right: float = hit_center + hit_width * 0.5 + hit_tolerance
+	var ingredient_left: float = item.position.x - ingredient_half_width
+	var ingredient_right: float = item.position.x + ingredient_half_width
+	return ingredient_right >= zone_left and ingredient_left <= zone_right
 
 func _show_in_cup(kind: StringName) -> void:
 	if kind == &"soda":
