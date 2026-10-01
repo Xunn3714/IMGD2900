@@ -48,7 +48,7 @@ func _run() -> void:
 	root.add_child(scene)
 	await process_frame
 	scene.set_process(false)
-	check(scene.get_node("CustomerWindow/Customer").texture.resource_path == "res://icon.svg", "Customer uses Godot logo")
+	check(scene.get_node("CustomerWindow/Customer").texture.resource_path == "res://art/customers/blue_bear.png", "Default customer uses Blue Bear")
 	check(scene.get_node("Track/Rail") is ColorRect and scene.hit_zone.color.g > scene.hit_zone.color.r, "Separate gray rail and green zone")
 	check(scene.get_node("Cup").size == Vector2(60, 90), "Rectangle cup keeps 60x90 dimensions")
 	scene._clear_ingredients()
