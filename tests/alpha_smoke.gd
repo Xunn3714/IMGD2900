@@ -60,7 +60,8 @@ func _run() -> void:
 	scene.set_process(false)
 	check(scene.get_node("CustomerWindow/Customer").texture.resource_path == "res://art/customers/blue_bear.png", "Default customer uses Blue Bear")
 	check(scene.get_node("Track/Rail") is ColorRect and scene.hit_zone.color.g > scene.hit_zone.color.r, "Separate gray rail and green zone")
-	check(scene.get_node("Cup").size == Vector2(60, 90), "Rectangle cup keeps 60x90 dimensions")
+	check(scene.get_node("Cup").size == Vector2(60, 90), "Empty cup artwork keeps 60x90 dimensions")
+	check(scene.get_node("Cup/EmptyCup") is TextureRect and scene.get_node("Cup/EmptyCup").texture == scene.empty_cup_art, "Empty cup artwork replaces the rectangle placeholder")
 	var first_order: StringName = scene.current_fruit
 	check(scene.order_fruits.has(first_order), "First order randomly chooses a supported fruit")
 	check(scene.order_image.texture == scene.finished_drinks[first_order], "Thinking bubble matches the random order")

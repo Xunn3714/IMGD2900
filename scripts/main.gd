@@ -17,6 +17,7 @@ const TRACK_Y: float = 226.0
 
 @export_group("Replaceable artwork")
 @export var customer_art: Texture2D = preload("res://icon.svg")
+@export var empty_cup_art: Texture2D = preload("res://art/drinks/empty_cup.png")
 @export var orange_art: Texture2D = preload("res://art/drinks/orange.png")
 @export var soda_art: Texture2D = preload("res://art/drinks/soda_base.png")
 @export var cherry_art: Texture2D = preload("res://art/drinks/cherry.png")
@@ -63,6 +64,7 @@ var quit_on_game_over: bool = true
 
 func _ready() -> void:
 	$CustomerWindow/Customer.texture = customer_art
+	_setup_cup_art()
 	textures = {
 		&"orange": orange_art, &"blueberry": blueberry_art,
 		&"strawberry": strawberry_art, &"grape": grape_art,
@@ -82,6 +84,23 @@ func _ready() -> void:
 	hit_zone.position = Vector2(hit_center - hit_width * 0.5, 198.0)
 	hit_zone.size = Vector2(hit_width, 56.0)
 	start_round()
+
+func _setup_cup_art() -> void:
+	var cup: Control = $Cup
+	if cup is Panel:
+		cup.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	var empty_cup: TextureRect = cup.get_node_or_null("EmptyCup") as TextureRect
+	if empty_cup == null:
+		empty_cup = TextureRect.new()
+		empty_cup.name = "EmptyCup"
+		cup.add_child(empty_cup)
+		cup.move_child(empty_cup, 0)
+	empty_cup.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	empty_cup.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	empty_cup.texture = empty_cup_art
+	empty_cup.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	empty_cup.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	empty_cup.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 func start_round() -> void:
 	if rules.game_over:

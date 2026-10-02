@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/customer_portrait.gd" id="customer_script"]
 [ext_resource type="Texture2D" path="res://art/placeholders/thought_bubble.svg" id="thought_bubble"]
 [ext_resource type="Texture2D" path="res://art/drinks/orange_soda.png" id="orange_soda"]
+[ext_resource type="Texture2D" path="res://art/drinks/empty_cup.png" id="empty_cup"]
 
 [sub_resource type="StyleBoxFlat" id="WindowStyle"]
 bg_color = Color(0.72, 0.83, 0.81, 1)
@@ -25,13 +26,7 @@ border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.3, 0.24, 0.2, 1)
 
-[sub_resource type="StyleBoxFlat" id="CupStyle"]
-bg_color = Color(1, 0.98, 0.92, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.3, 0.24, 0.2, 1)
+[sub_resource type="StyleBoxEmpty" id="CupStyle"]
 
 [node name="Main" type="Control" unique_id=1307196657]
 layout_mode = 3
@@ -243,6 +238,16 @@ offset_right = 420.0
 offset_bottom = 346.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("CupStyle")
+
+[node name="EmptyCup" type="TextureRect" parent="Cup"]
+texture_filter = 1
+layout_mode = 0
+offset_right = 60.0
+offset_bottom = 90.0
+mouse_filter = 2
+texture = ExtResource("empty_cup")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Drink" type="TextureRect" parent="Cup"]
 visible = false
