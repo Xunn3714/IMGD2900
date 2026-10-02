@@ -6,6 +6,9 @@ const INGREDIENT_SCENE: PackedScene = preload("res://scenes/ingredient.tscn")
 const TRACK_LEFT: float = 32.0
 const TRACK_RIGHT: float = 608.0
 const TRACK_Y: float = 226.0
+const SELECTION_SLOT_START := Vector2(426.0, 270.0)
+const SELECTION_SLOT_SIZE := Vector2(44.0, 66.0)
+const SELECTION_SLOT_GAP: float = 6.0
 
 @export_group("Playtest tuning")
 @export_range(60.0, 240.0, 5.0) var ingredient_speed: float = 120.0
@@ -65,6 +68,7 @@ var quit_on_game_over: bool = true
 func _ready() -> void:
 	$CustomerWindow/Customer.texture = customer_art
 	_setup_cup_art()
+	_setup_selection_slots()
 	textures = {
 		&"orange": orange_art, &"blueberry": blueberry_art,
 		&"strawberry": strawberry_art, &"grape": grape_art,
@@ -101,6 +105,14 @@ func _setup_cup_art() -> void:
 	empty_cup.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	empty_cup.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	empty_cup.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+func _setup_selection_slots() -> void:
+	for index in selection_slots.size():
+		selection_slots[index].position = Vector2(
+			SELECTION_SLOT_START.x + index * (SELECTION_SLOT_SIZE.x + SELECTION_SLOT_GAP),
+			SELECTION_SLOT_START.y
+		)
+		selection_slots[index].size = SELECTION_SLOT_SIZE
 
 func start_round() -> void:
 	if rules.game_over:

@@ -62,12 +62,16 @@ func _run() -> void:
 	check(scene.get_node("Track/Rail") is ColorRect and scene.hit_zone.color.g > scene.hit_zone.color.r, "Separate gray rail and green zone")
 	check(scene.get_node("Cup").size == Vector2(60, 90), "Empty cup artwork keeps 60x90 dimensions")
 	check(scene.get_node("Cup/EmptyCup") is TextureRect and scene.get_node("Cup/EmptyCup").texture == scene.empty_cup_art, "Empty cup artwork replaces the rectangle placeholder")
+	check(scene.selection_slots[0].size == Vector2(44, 66) and scene.selection_slots[2].position == Vector2(526, 270), "Cup-side selections use the larger three-slot layout")
 	var first_order: StringName = scene.current_fruit
 	check(scene.order_fruits.has(first_order), "First order randomly chooses a supported fruit")
 	check(scene.order_image.texture == scene.finished_drinks[first_order], "Thinking bubble matches the random order")
 	scene._clear_ingredients()
 	var item = scene._spawn_ingredient(first_order)
 	var visual: Sprite2D = item.get_node("Visual")
+	var visual_size: Vector2 = Vector2(visual.texture.get_width(), visual.texture.get_height()) * visual.scale
+	var expected_visual_size: float = 68.0 if first_order == &"grape" else 56.0
+	check(is_equal_approx(maxf(visual_size.x, visual_size.y), expected_visual_size), "QTE fruit artwork uses its tuned display size")
 	var ingredient_half_width: float = visual.texture.get_width() * absf(visual.scale.x) * 0.5
 	var left_hit_boundary: float = scene.hit_center - scene.hit_width * 0.5 - scene.hit_tolerance - ingredient_half_width
 	item.position.x = left_hit_boundary - 0.1
