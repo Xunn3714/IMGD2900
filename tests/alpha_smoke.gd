@@ -48,8 +48,9 @@ func _run() -> void:
 	model.select(&"soda")
 	check(model.is_success(), "Can complete after the first mistake")
 	model.start_cup()
-	check(model.mistakes == 1 and model.selected.is_empty(), "Mistake persists after a successful cup")
-	check(model.select(&"cherry") == Rules.Selection.GAME_OVER, "Second wrong item ends session")
+	check(model.mistakes == 0 and model.selected.is_empty(), "A new drink resets its mistake count")
+	check(model.select(&"cherry") == Rules.Selection.MISTAKE, "First wrong item in a new drink continues")
+	check(model.select(&"cherry") == Rules.Selection.GAME_OVER, "Second wrong item in the same drink ends session")
 	model.start_cup()
 	check(model.game_over and model.finished and model.mistakes == 2, "Cannot bypass game over")
 	var scene: Control = load("res://scenes/main.tscn").instantiate()
@@ -66,6 +67,26 @@ func _run() -> void:
 	var first_order: StringName = scene.current_fruit
 	check(scene.order_fruits.has(first_order), "First order randomly chooses a supported fruit")
 	check(scene.order_image.texture == scene.finished_drinks[first_order], "Thinking bubble matches the random order")
+	check(scene.current_ingredient_speed == scene.ingredient_speed, "First drink uses the base ingredient speed")
+	check(scene._ingredient_speed_for_round(1000) == scene.max_ingredient_speed, "Ingredient speed stops at its configured maximum")
+	check(scene.ingredient_container.get_child_count() == 1 and scene.bag.size() == 9, "First ingredient is drawn from the shuffled spawn bag")
+	scene.bag.clear()
+	scene.non_soda_spawn_streak = 0
+	var generated_kinds: Array[StringName] = []
+	var longest_non_soda_streak: int = 0
+	var current_non_soda_streak: int = 0
+	for index in 12:
+		var generated_kind: StringName = scene._next_kind()
+		generated_kinds.append(generated_kind)
+		if generated_kind == &"soda":
+			current_non_soda_streak = 0
+		else:
+			current_non_soda_streak += 1
+			longest_non_soda_streak = maxi(longest_non_soda_streak, current_non_soda_streak)
+	check(generated_kinds.count(&"soda") >= 4, "Soda has a higher spawn weight")
+	check(longest_non_soda_streak <= 2, "At most two non-soda ingredients spawn between sodas")
+	scene.bag.clear()
+	scene.non_soda_spawn_streak = 0
 	scene._clear_ingredients()
 	var item = scene._spawn_ingredient(first_order)
 	var visual: Sprite2D = item.get_node("Visual")
@@ -97,7 +118,8 @@ func _run() -> void:
 	press(scene, true)
 	check(scene.rules.finished, "Holding Space cannot restart")
 	press(scene)
-	check(not scene.rules.finished and scene.rules.mistakes == 1, "Same key starts next cup with mistakes preserved")
+	check(not scene.rules.finished and scene.rules.mistakes == 0, "Same key starts next cup with mistakes reset")
+	check(scene.current_ingredient_speed == minf(scene.ingredient_speed + scene.speed_increase_per_round, scene.max_ingredient_speed), "Next drink increases ingredient speed")
 	var second_order: StringName = scene.current_fruit
 	check(scene.order_fruits.has(second_order) and second_order != first_order, "Next order is random without an immediate repeat")
 	check(scene.order_image.texture == scene.finished_drinks[second_order], "Next thinking bubble matches its order")
@@ -112,18 +134,20 @@ func _run() -> void:
 	check(scene.current_fruit != second_order, "Third random order also avoids an immediate repeat")
 	scene.elapsed = scene.round_duration - 0.01
 	scene._process(0.02)
-	check(scene.rules.timed_out and scene.rules.mistakes == 1, "Timeout does not add or reset mistakes")
+	check(scene.rules.timed_out and scene.rules.mistakes == 0, "Timeout does not add a mistake")
 	scene.restart_delay = 0.0
 	press(scene)
 	scene._clear_ingredients()
 	pick(scene, &"cherry")
-	check(scene.rules.game_over and exit_count == 1, "Second wrong selection requests exit immediately")
+	check(not scene.rules.game_over and scene.rules.mistakes == 1 and exit_count == 0, "First mistake in this drink still continues")
+	pick(scene, &"cherry")
+	check(scene.rules.game_over and exit_count == 1, "Second mistake in the same drink requests exit immediately")
 	press(scene)
 	check(scene.rules.game_over and exit_count == 1, "No restart or repeat exit after game over")
 	scene.queue_free()
 	await process_frame
 	if failures.is_empty():
-		print("ALPHA_SMOKE_PASS: four fruit recipes, random orders, all choice icons, art, input, mistakes, exit")
+		print("ALPHA_SMOKE_PASS: rising speed, frequent soda, per-drink mistakes, recipes, art, input, exit")
 		quit(0)
 	else:
 		quit(1)

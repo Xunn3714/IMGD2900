@@ -1,5 +1,5 @@
 extends RefCounted
-## Mistakes last for the entire session, even after serving a drink.
+## Each drink has its own mistake count.
 enum Selection { IGNORED, CORRECT, MISTAKE, GAME_OVER }
 const CAPACITY: int = 2
 const MAX_MISTAKES: int = 2
@@ -18,6 +18,7 @@ func start_cup(next_target: StringName = &"orange") -> void:
 	if FRUIT_KINDS.has(next_target):
 		target_fruit = next_target
 	selected.clear()
+	mistakes = 0
 	finished = false
 	timed_out = false
 

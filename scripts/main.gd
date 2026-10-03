@@ -12,6 +12,8 @@ const SELECTION_SLOT_GAP: float = 6.0
 
 @export_group("Playtest tuning")
 @export_range(60.0, 240.0, 5.0) var ingredient_speed: float = 120.0
+@export_range(0.0, 40.0, 1.0) var speed_increase_per_round: float = 12.0
+@export_range(120.0, 300.0, 6.0) var max_ingredient_speed: float = 216.0
 @export_range(0.8, 3.0, 0.1) var spawn_interval: float = 1.5
 @export_range(32.0, 120.0, 8.0) var hit_width: float = 64.0
 @export_range(0.0, 16.0, 1.0) var hit_tolerance: float = 4.0
@@ -59,6 +61,9 @@ var order_fruits: Array[StringName] = [&"orange", &"blueberry", &"strawberry", &
 var current_fruit: StringName = &""
 var displayed_choice_count: int = 0
 var bag: Array[StringName] = []
+var rounds_started: int = 0
+var current_ingredient_speed: float = 120.0
+var non_soda_spawn_streak: int = 0
 var spawn_elapsed: float = 0.0
 var elapsed: float = 0.0
 var restart_delay: float = 0.0
@@ -117,6 +122,8 @@ func _setup_selection_slots() -> void:
 func start_round() -> void:
 	if rules.game_over:
 		return
+	current_ingredient_speed = _ingredient_speed_for_round(rounds_started)
+	rounds_started += 1
 	_clear_ingredients()
 	for child in fruit_container.get_children():
 		fruit_container.remove_child(child)
@@ -131,13 +138,17 @@ func start_round() -> void:
 		slot.visible = false
 	displayed_choice_count = 0
 	bag.clear()
+	non_soda_spawn_streak = 0
 	spawn_elapsed = 0.0
 	elapsed = 0.0
 	restart_delay = 0.0
 	drink.visible = false
 	result_panel.visible = false
 	timer_label.text = "%ds" % ceili(round_duration)
-	_spawn_ingredient(current_fruit)
+	_spawn_ingredient(_next_kind())
+
+func _ingredient_speed_for_round(round_index: int) -> float:
+	return minf(ingredient_speed + round_index * speed_increase_per_round, max_ingredient_speed)
 
 func _process(delta: float) -> void:
 	if rules.finished:
@@ -173,19 +184,29 @@ func _input(event: InputEvent) -> void:
 
 func _next_kind() -> StringName:
 	if bag.is_empty():
-		bag.assign([current_fruit, current_fruit, &"soda", &"soda"])
+		bag.assign([current_fruit, current_fruit, &"soda", &"soda", &"soda", &"soda"])
 		if distractors_enabled:
 			for fruit in order_fruits:
 				if fruit != current_fruit:
 					bag.append(fruit)
 			bag.append(&"cherry")
 		bag.shuffle()
-	return bag.pop_back()
+	var kind: StringName
+	if non_soda_spawn_streak >= 2:
+		var soda_index: int = bag.find(&"soda")
+		kind = bag.pop_at(soda_index) if soda_index >= 0 else &"soda"
+	else:
+		kind = bag.pop_back()
+	if kind == &"soda":
+		non_soda_spawn_streak = 0
+	else:
+		non_soda_spawn_streak += 1
+	return kind
 
 func _spawn_ingredient(kind: StringName) -> Node2D:
 	var item: Node2D = INGREDIENT_SCENE.instantiate()
 	ingredient_container.add_child(item)
-	item.configure(kind, textures[kind], ingredient_speed)
+	item.configure(kind, textures[kind], current_ingredient_speed)
 	item.position = Vector2(12.0, TRACK_Y)
 	return item
 
