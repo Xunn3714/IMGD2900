@@ -67,6 +67,9 @@ var non_soda_spawn_streak: int = 0
 var spawn_elapsed: float = 0.0
 var elapsed: float = 0.0
 var restart_delay: float = 0.0
+var correct_pick_sound: AudioStream
+var wrong_pick_sound: AudioStream
+var pick_sound_player: AudioStreamPlayer
 # Test scripts intercept exit_requested; normal gameplay closes immediately.
 var quit_on_game_over: bool = true
 
@@ -92,6 +95,12 @@ func _ready() -> void:
 	hit_zone_direction = 1.0 if randf() < 0.5 else -1.0
 	hit_zone.position = Vector2(hit_center - hit_width * 0.5, 198.0)
 	hit_zone.size = Vector2(hit_width, 56.0)
+	correct_pick_sound = load("res://audio/correct.wav") as AudioStream
+	wrong_pick_sound = load("res://audio/wrong.mp3") as AudioStream
+
+	pick_sound_player = AudioStreamPlayer.new()
+	pick_sound_player.volume_db = -4.0
+	add_child(pick_sound_player)
 	start_round()
 
 func _setup_cup_art() -> void:
@@ -240,6 +249,10 @@ func select_ingredient() -> void:
 		return
 	var kind: StringName = candidate.kind
 	var outcome: int = rules.select(kind)
+	if outcome == Rules.Selection.CORRECT:
+		_play_sound(correct_pick_sound)
+	elif outcome == Rules.Selection.MISTAKE or outcome == Rules.Selection.GAME_OVER:
+		_play_sound(wrong_pick_sound)
 	ingredient_container.remove_child(candidate)
 	candidate.queue_free()
 	_show_selected_icon(kind)
@@ -321,7 +334,13 @@ func text_fit_result_panel() -> void:
 	result_title.reset_size()
 	var title_width: float = result_title.get_minimum_size().x
 	result_panel.size.x = title_width + 20.0
-	result_panel.position.x = 32
+	result_panel.position.x = 32.0
+
+func _play_sound(sound: AudioStream) -> void:
+	if sound == null:
+		return
+	pick_sound_player.stream = sound
+	pick_sound_player.play()
 
 func _clear_ingredients() -> void:
 	for item in ingredient_container.get_children():
