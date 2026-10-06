@@ -183,9 +183,14 @@ func _process(delta: float) -> void:
 			item.queue_free()
 
 func _input(event: InputEvent) -> void:
-	if not event.is_action_pressed(&"add_ingredient") or rules.game_over:
+	if not event.is_action_pressed(&"add_ingredient"):
 		return
 	if event is InputEventKey and event.echo:
+		return
+	if rules.game_over:
+		if restart_delay == 0.0:
+			rules.game_over = false
+			start_round()
 		return
 	if rules.finished:
 		if restart_delay == 0.0:
@@ -240,10 +245,10 @@ func select_ingredient() -> void:
 	_show_selected_icon(kind)
 	if outcome == Rules.Selection.GAME_OVER:
 		_clear_ingredients()
-		print("ALPHA_GAME_OVER: selected two wrong ingredients; quitting")
-		exit_requested.emit()
-		if quit_on_game_over:
-			get_tree().quit()
+		result_panel.visible = true
+		result_title.text = "Too many mistakes! Restart?"
+		text_fit_result_panel()
+		restart_delay = 0.5
 		return
 	if outcome == Rules.Selection.MISTAKE:
 		# Anger expression is intentionally left for the next design discussion.
@@ -286,6 +291,7 @@ func _show_result() -> void:
 	result_panel.visible = true
 	restart_delay = 0.4
 	result_title.text = "Order ready!" if rules.is_success() else "Time's up!"
+	text_fit_result_panel()
 	print("ALPHA_CUP selected=%s mistakes=%d success=%s" % [rules.selected, rules.mistakes, rules.is_success()])
 
 func _moving_hit_zone(delta: float) -> void:
@@ -310,6 +316,12 @@ func _randomize_hit_zone_speed() -> void:
 	var min_speed: float = lerpf(220.0, 360.0, round_length)
 	var max_speed: float = lerpf(320.0, 460.0, round_length)
 	hit_zone_speed = randf_range(min_speed, max_speed)
+
+func text_fit_result_panel() -> void:
+	result_title.reset_size()
+	var title_width: float = result_title.get_minimum_size().x
+	result_panel.size.x = title_width + 20.0
+	result_panel.position.x = 32
 
 func _clear_ingredients() -> void:
 	for item in ingredient_container.get_children():
