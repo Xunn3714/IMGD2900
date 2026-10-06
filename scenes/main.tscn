@@ -47,9 +47,9 @@ color = Color(0.93, 0.89, 0.79, 1)
 [node name="CustomerWindow" type="Panel" parent="." unique_id=1148728096]
 clip_contents = true
 layout_mode = 0
-offset_left = 32.0
+offset_left = 160.0
 offset_top = 24.0
-offset_right = 314.0
+offset_right = 480.0
 offset_bottom = 168.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("WindowStyle")
@@ -101,87 +101,6 @@ theme_override_font_sizes/font_size = 12
 text = "Orange soda"
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="InstructionsBox" type="Panel" parent="." unique_id=2045750915]
-layout_mode = 0
-offset_left = 358.0
-offset_top = 32.0
-offset_right = 608.0
-offset_bottom = 120.0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("BoxStyle")
-
-[node name="Instructions" type="Label" parent="InstructionsBox" unique_id=1365929937]
-layout_mode = 0
-offset_left = 10.0
-offset_top = 7.0
-offset_right = 242.0
-offset_bottom = 81.0
-theme_override_colors/font_color = Color(0.3, 0.24, 0.2, 1)
-theme_override_font_sizes/font_size = 13
-text = "Inside green zone: SPACE to add.
-Don't want it? Let it pass.
-Two wrong picks: quit."
-
-[node name="LegendOrange" type="Label" parent="." unique_id=894338397]
-layout_mode = 0
-offset_left = 358.0
-offset_top = 128.0
-offset_right = 428.0
-offset_bottom = 147.0
-theme_override_colors/font_color = Color(0.76, 0.39, 0.05, 1)
-theme_override_font_sizes/font_size = 11
-text = "● Orange"
-
-[node name="LegendBlueberry" type="Label" parent="."]
-layout_mode = 0
-offset_left = 430.0
-offset_top = 128.0
-offset_right = 516.0
-offset_bottom = 147.0
-theme_override_colors/font_color = Color(0.25, 0.35, 0.75, 1)
-theme_override_font_sizes/font_size = 11
-text = "● Blueberry"
-
-[node name="LegendStrawberry" type="Label" parent="."]
-layout_mode = 0
-offset_left = 518.0
-offset_top = 128.0
-offset_right = 608.0
-offset_bottom = 147.0
-theme_override_colors/font_color = Color(0.85, 0.22, 0.28, 1)
-theme_override_font_sizes/font_size = 11
-text = "● Strawberry"
-
-[node name="LegendGrape" type="Label" parent="."]
-layout_mode = 0
-offset_left = 358.0
-offset_top = 149.0
-offset_right = 428.0
-offset_bottom = 168.0
-theme_override_colors/font_color = Color(0.48, 0.27, 0.68, 1)
-theme_override_font_sizes/font_size = 11
-text = "● Grape"
-
-[node name="LegendSoda" type="Label" parent="." unique_id=997444042]
-layout_mode = 0
-offset_left = 430.0
-offset_top = 149.0
-offset_right = 496.0
-offset_bottom = 168.0
-theme_override_colors/font_color = Color(0.15, 0.43, 0.65, 1)
-theme_override_font_sizes/font_size = 11
-text = "● Soda"
-
-[node name="LegendCherry" type="Label" parent="." unique_id=69994720]
-layout_mode = 0
-offset_left = 498.0
-offset_top = 149.0
-offset_right = 568.0
-offset_bottom = 168.0
-theme_override_colors/font_color = Color(0.7, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 11
-text = "● Cherry"
 
 [node name="TimeRemaining" type="Label" parent="." unique_id=122281915]
 layout_mode = 0
