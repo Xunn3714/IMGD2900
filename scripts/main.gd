@@ -332,8 +332,12 @@ func _randomize_hit_zone_speed() -> void:
 
 func text_fit_result_panel() -> void:
 	result_title.reset_size()
-	var title_width: float = result_title.get_minimum_size().x
-	result_panel.size.x = title_width + 20.0
+	var retry_label: Label = $Result/Retry
+	retry_label.reset_size()
+
+	var widest_text: float = maxf(result_title.get_minimum_size().x, retry_label.get_minimum_size().x)
+
+	result_panel.size.x = widest_text + 20.0
 	result_panel.position.x = 32.0
 
 func _play_sound(sound: AudioStream) -> void:
