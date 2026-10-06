@@ -88,7 +88,7 @@ func _ready() -> void:
 		&"strawberry": strawberry_syrup_art, &"grape": grape_syrup_art,
 		&"cherry": cherry_syrup_art, &"soda": soda_art,
 	}
-	hit_zone_speed = randf_range(140.0, 300.0)
+	_randomize_hit_zone_speed()
 	hit_zone_direction = 1.0 if randf() < 0.5 else -1.0
 	hit_zone.position = Vector2(hit_center - hit_width * 0.5, 198.0)
 	hit_zone.size = Vector2(hit_width, 56.0)
@@ -141,6 +141,7 @@ func start_round() -> void:
 	non_soda_spawn_streak = 0
 	spawn_elapsed = 0.0
 	elapsed = 0.0
+	hit_width = 64.0
 	restart_delay = 0.0
 	drink.visible = false
 	result_panel.visible = false
@@ -154,8 +155,18 @@ func _process(delta: float) -> void:
 	if rules.finished:
 		restart_delay = maxf(0.0, restart_delay - delta)
 		return
-	_moving_hit_zone(delta)
 	elapsed += delta
+
+	# 0 is the start of the round 1 is the end 
+	var round_length: float = clampf(elapsed / round_duration, 0.0, 1.0)
+	
+	var shrinking: float = clampf(round_length / 0.25, 0.0, 1.0)
+	var bounce: float = absf(sin(elapsed * 8.0)) * 4.0
+
+	hit_width = lerpf(64.0, 32.0, shrinking) + bounce
+	hit_zone.size.x = hit_width
+	_moving_hit_zone(delta)
+
 	timer_label.text = "%ds" % maxi(0, ceili(round_duration - elapsed))
 	if elapsed >= round_duration:
 		rules.expire()
@@ -286,13 +297,19 @@ func _moving_hit_zone(delta: float) -> void:
 	if hit_center <= min_center:
 		hit_center = min_center
 		hit_zone_direction = 1.0
-		hit_zone_speed = randf_range(140.0, 300.0)
+		_randomize_hit_zone_speed()
 	elif hit_center >= max_center:
 		hit_center = max_center
 		hit_zone_direction = -1.0
-		hit_zone_speed = randf_range(140.0, 300.0)
+		_randomize_hit_zone_speed()
 		
 	hit_zone.position = Vector2(hit_center - hit_width * 0.5, 198.0)
+
+func _randomize_hit_zone_speed() -> void:
+	var round_length: float = clampf(elapsed / round_duration, 0.0, 1.0)
+	var min_speed: float = lerpf(220.0, 360.0, round_length)
+	var max_speed: float = lerpf(320.0, 460.0, round_length)
+	hit_zone_speed = randf_range(min_speed, max_speed)
 
 func _clear_ingredients() -> void:
 	for item in ingredient_container.get_children():
