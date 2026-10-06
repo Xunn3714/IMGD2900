@@ -17,7 +17,7 @@ const SELECTION_SLOT_GAP: float = 6.0
 @export_range(0.8, 3.0, 0.1) var spawn_interval: float = 1.5
 @export_range(32.0, 120.0, 8.0) var hit_width: float = 64.0
 @export_range(0.0, 16.0, 1.0) var hit_tolerance: float = 4.0
-@export_range(15.0, 120.0, 5.0) var round_duration: float = 45.0
+@export_range(15.0, 120.0, 5.0) var round_duration: float = 30.0
 @export var distractors_enabled: bool = true
 
 @export_group("Replaceable artwork")
