@@ -1,0 +1,33 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/start_screen.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://art/start_screen/start_screen.png" id="2_background"]
+[ext_resource type="Texture2D" path="res://art/start_screen/press_space_to_start.png" id="3_prompt"]
+
+[node name="StartScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="."]
+texture_filter = 2
+layout_mode = 0
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+texture = ExtResource("2_background")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="PressSpacePrompt" type="TextureRect" parent="."]
+texture_filter = 2
+layout_mode = 0
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+texture = ExtResource("3_prompt")
+expand_mode = 1
+stretch_mode = 6

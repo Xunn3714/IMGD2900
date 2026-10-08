@@ -34,6 +34,7 @@ layout_mode = 3
 anchors_preset = 0
 offset_right = 640.0
 offset_bottom = 360.0
+scale = Vector2(2, 2)
 mouse_filter = 2
 script = ExtResource("1")
 customer_art = ExtResource("2")
