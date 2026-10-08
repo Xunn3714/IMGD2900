@@ -39,6 +39,9 @@ const SELECTION_SLOT_GAP: float = 6.0
 @export var strawberry_syrup_art: Texture2D = preload("res://art/drinks/strawberry_syrup.png")
 @export var grape_syrup_art: Texture2D = preload("res://art/drinks/grape_syrup.png")
 @export var cherry_syrup_art: Texture2D = preload("res://art/drinks/cherry_syrup.png")
+@export var angry1_art: Texture2D = preload("res://art/customer_reactions/angry1.png")
+@export var angry2_art: Texture2D = preload("res://art/customer_reactions/angry2.png")
+@export_range(0.25, 2.0, 0.05) var game_over_exit_delay: float = 0.75
 
 @onready var hit_zone: ColorRect = $Track/HitZone
 @onready var ingredient_container: Node2D = $Track/Clip/Ingredients
@@ -49,6 +52,7 @@ const SELECTION_SLOT_GAP: float = 6.0
 @onready var timer_label: Label = $TimeRemaining
 @onready var result_panel: Panel = $Result
 @onready var result_title: Label = $Result/Title
+@onready var angry_overlay: TextureRect = $CustomerWindow/AngryOverlay
 
 var hit_center: float = 484.0
 var hit_zone_speed: float = 110.0
@@ -67,6 +71,9 @@ var non_soda_spawn_streak: int = 0
 var spawn_elapsed: float = 0.0
 var elapsed: float = 0.0
 var restart_delay: float = 0.0
+var correct_pick_sound: AudioStream
+var wrong_pick_sound: AudioStream
+var pick_sound_player: AudioStreamPlayer
 # Test scripts intercept exit_requested; normal gameplay closes immediately.
 var quit_on_game_over: bool = true
 
@@ -88,10 +95,16 @@ func _ready() -> void:
 		&"strawberry": strawberry_syrup_art, &"grape": grape_syrup_art,
 		&"cherry": cherry_syrup_art, &"soda": soda_art,
 	}
-	hit_zone_speed = randf_range(140.0, 300.0)
+	_randomize_hit_zone_speed()
 	hit_zone_direction = 1.0 if randf() < 0.5 else -1.0
 	hit_zone.position = Vector2(hit_center - hit_width * 0.5, 198.0)
 	hit_zone.size = Vector2(hit_width, 56.0)
+	correct_pick_sound = load("res://audio/correct.wav") as AudioStream
+	wrong_pick_sound = load("res://audio/wrong.mp3") as AudioStream
+	pick_sound_player = AudioStreamPlayer.new()
+	pick_sound_player.volume_db = -4.0
+	add_child(pick_sound_player)
+	angry_overlay.visible = false
 	start_round()
 
 func _setup_cup_art() -> void:
@@ -141,8 +154,10 @@ func start_round() -> void:
 	non_soda_spawn_streak = 0
 	spawn_elapsed = 0.0
 	elapsed = 0.0
+	hit_width = 64.0
 	restart_delay = 0.0
 	drink.visible = false
+	angry_overlay.visible = false
 	result_panel.visible = false
 	timer_label.text = "%ds" % ceili(round_duration)
 	_spawn_ingredient(_next_kind())
@@ -154,8 +169,13 @@ func _process(delta: float) -> void:
 	if rules.finished:
 		restart_delay = maxf(0.0, restart_delay - delta)
 		return
-	_moving_hit_zone(delta)
 	elapsed += delta
+	var round_progress: float = clampf(elapsed / round_duration, 0.0, 1.0)
+	var shrinking: float = clampf(round_progress / 0.25, 0.0, 1.0)
+	var bounce: float = absf(sin(elapsed * 8.0)) * 4.0
+	hit_width = lerpf(64.0, 32.0, shrinking) + bounce
+	hit_zone.size.x = hit_width
+	_moving_hit_zone(delta)
 	timer_label.text = "%ds" % maxi(0, ceili(round_duration - elapsed))
 	if elapsed >= round_duration:
 		rules.expire()
@@ -224,18 +244,24 @@ func select_ingredient() -> void:
 		return
 	var kind: StringName = candidate.kind
 	var outcome: int = rules.select(kind)
+	if outcome == Rules.Selection.CORRECT:
+		_play_sound(correct_pick_sound)
+	elif outcome == Rules.Selection.MISTAKE or outcome == Rules.Selection.GAME_OVER:
+		_play_sound(wrong_pick_sound)
 	ingredient_container.remove_child(candidate)
 	candidate.queue_free()
 	_show_selected_icon(kind)
 	if outcome == Rules.Selection.GAME_OVER:
+		_show_anger(2)
 		_clear_ingredients()
 		print("ALPHA_GAME_OVER: selected two wrong ingredients; quitting")
 		exit_requested.emit()
 		if quit_on_game_over:
-			get_tree().quit()
+			var exit_timer := get_tree().create_timer(game_over_exit_delay)
+			exit_timer.timeout.connect(func(): get_tree().quit())
 		return
 	if outcome == Rules.Selection.MISTAKE:
-		# Anger expression is intentionally left for the next design discussion.
+		_show_anger(1)
 		return
 	if outcome != Rules.Selection.CORRECT:
 		return
@@ -286,13 +312,36 @@ func _moving_hit_zone(delta: float) -> void:
 	if hit_center <= min_center:
 		hit_center = min_center
 		hit_zone_direction = 1.0
-		hit_zone_speed = randf_range(140.0, 300.0)
+		_randomize_hit_zone_speed()
 	elif hit_center >= max_center:
 		hit_center = max_center
 		hit_zone_direction = -1.0
-		hit_zone_speed = randf_range(140.0, 300.0)
+		_randomize_hit_zone_speed()
 		
 	hit_zone.position = Vector2(hit_center - hit_width * 0.5, 198.0)
+
+func _randomize_hit_zone_speed() -> void:
+	var round_progress: float = clampf(elapsed / round_duration, 0.0, 1.0)
+	var min_speed: float = lerpf(220.0, 360.0, round_progress)
+	var max_speed: float = lerpf(320.0, 460.0, round_progress)
+	hit_zone_speed = randf_range(min_speed, max_speed)
+
+func _play_sound(sound: AudioStream) -> void:
+	if sound == null:
+		return
+	pick_sound_player.stream = sound
+	pick_sound_player.play()
+
+func _show_anger(level: int) -> void:
+	angry_overlay.visible = true
+	if level >= 2:
+		angry_overlay.texture = angry2_art
+		angry_overlay.position = Vector2(122.0, 32.0)
+		angry_overlay.size = Vector2(40.0, 40.0)
+	else:
+		angry_overlay.texture = angry1_art
+		angry_overlay.position = Vector2(75.0, 32.0)
+		angry_overlay.size = Vector2(90.0, 84.0)
 
 func _clear_ingredients() -> void:
 	for item in ingredient_container.get_children():

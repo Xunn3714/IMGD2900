@@ -33,6 +33,7 @@ layout_mode = 3
 anchors_preset = 0
 offset_right = 640.0
 offset_bottom = 360.0
+scale = Vector2(2, 2)
 mouse_filter = 2
 script = ExtResource("1")
 customer_art = ExtResource("2")
@@ -47,9 +48,9 @@ color = Color(0.93, 0.89, 0.79, 1)
 [node name="CustomerWindow" type="Panel" parent="." unique_id=1148728096]
 clip_contents = true
 layout_mode = 0
-offset_left = 32.0
-offset_top = 24.0
-offset_right = 314.0
+offset_left = 80.0
+offset_top = 12.0
+offset_right = 560.0
 offset_bottom = 168.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("WindowStyle")
@@ -57,10 +58,10 @@ theme_override_styles/panel = SubResource("WindowStyle")
 [node name="Customer" type="TextureRect" parent="CustomerWindow" unique_id=37254788]
 texture_filter = 1
 layout_mode = 0
-offset_left = 48.0
-offset_top = 58.0
-offset_right = 132.0
-offset_bottom = 134.0
+offset_left = 70.0
+offset_top = 30.0
+offset_right = 180.0
+offset_bottom = 145.0
 mouse_filter = 2
 texture = ExtResource("2")
 expand_mode = 1
@@ -68,22 +69,36 @@ stretch_mode = 5
 script = ExtResource("customer_script")
 portraits = Array[Texture2D]([ExtResource("2"), ExtResource("customer_brown"), ExtResource("customer_bunny"), ExtResource("customer_froish")])
 
+[node name="AngryOverlay" type="TextureRect" parent="CustomerWindow"]
+visible = false
+z_index = 1
+texture_filter = 1
+layout_mode = 0
+offset_left = 75.0
+offset_top = 32.0
+offset_right = 165.0
+offset_bottom = 116.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
 [node name="OrderBubble" type="TextureRect" parent="CustomerWindow" unique_id=1104638358]
 layout_mode = 0
-offset_left = 144.0
-offset_top = 18.0
-offset_right = 264.0
-offset_bottom = 114.0
+offset_left = 230.0
+offset_top = 10.0
+offset_right = 430.0
+offset_bottom = 150.0
 mouse_filter = 2
 texture = ExtResource("thought_bubble")
 expand_mode = 1
+stretch_mode = 5
 
 [node name="DrinkImage" type="TextureRect" parent="CustomerWindow/OrderBubble"]
 layout_mode = 0
-offset_left = 30.0
-offset_top = 10.0
-offset_right = 90.0
-offset_bottom = 60.0
+offset_left = 74.0
+offset_top = 14.0
+offset_right = 126.0
+offset_bottom = 96.0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
@@ -101,87 +116,6 @@ theme_override_font_sizes/font_size = 12
 text = "Orange soda"
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="InstructionsBox" type="Panel" parent="." unique_id=2045750915]
-layout_mode = 0
-offset_left = 358.0
-offset_top = 32.0
-offset_right = 608.0
-offset_bottom = 120.0
-mouse_filter = 2
-theme_override_styles/panel = SubResource("BoxStyle")
-
-[node name="Instructions" type="Label" parent="InstructionsBox" unique_id=1365929937]
-layout_mode = 0
-offset_left = 10.0
-offset_top = 7.0
-offset_right = 242.0
-offset_bottom = 81.0
-theme_override_colors/font_color = Color(0.3, 0.24, 0.2, 1)
-theme_override_font_sizes/font_size = 13
-text = "Inside green zone: SPACE to add.
-Don't want it? Let it pass.
-Two wrong picks: quit."
-
-[node name="LegendOrange" type="Label" parent="." unique_id=894338397]
-layout_mode = 0
-offset_left = 358.0
-offset_top = 128.0
-offset_right = 428.0
-offset_bottom = 147.0
-theme_override_colors/font_color = Color(0.76, 0.39, 0.05, 1)
-theme_override_font_sizes/font_size = 11
-text = "● Orange"
-
-[node name="LegendBlueberry" type="Label" parent="."]
-layout_mode = 0
-offset_left = 430.0
-offset_top = 128.0
-offset_right = 516.0
-offset_bottom = 147.0
-theme_override_colors/font_color = Color(0.25, 0.35, 0.75, 1)
-theme_override_font_sizes/font_size = 11
-text = "● Blueberry"
-
-[node name="LegendStrawberry" type="Label" parent="."]
-layout_mode = 0
-offset_left = 518.0
-offset_top = 128.0
-offset_right = 608.0
-offset_bottom = 147.0
-theme_override_colors/font_color = Color(0.85, 0.22, 0.28, 1)
-theme_override_font_sizes/font_size = 11
-text = "● Strawberry"
-
-[node name="LegendGrape" type="Label" parent="."]
-layout_mode = 0
-offset_left = 358.0
-offset_top = 149.0
-offset_right = 428.0
-offset_bottom = 168.0
-theme_override_colors/font_color = Color(0.48, 0.27, 0.68, 1)
-theme_override_font_sizes/font_size = 11
-text = "● Grape"
-
-[node name="LegendSoda" type="Label" parent="." unique_id=997444042]
-layout_mode = 0
-offset_left = 430.0
-offset_top = 149.0
-offset_right = 496.0
-offset_bottom = 168.0
-theme_override_colors/font_color = Color(0.15, 0.43, 0.65, 1)
-theme_override_font_sizes/font_size = 11
-text = "● Soda"
-
-[node name="LegendCherry" type="Label" parent="." unique_id=69994720]
-layout_mode = 0
-offset_left = 498.0
-offset_top = 149.0
-offset_right = 568.0
-offset_bottom = 168.0
-theme_override_colors/font_color = Color(0.7, 0.2, 0.2, 1)
-theme_override_font_sizes/font_size = 11
-text = "● Cherry"
 
 [node name="TimeRemaining" type="Label" parent="." unique_id=122281915]
 layout_mode = 0

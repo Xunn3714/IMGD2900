@@ -19,7 +19,7 @@ func _run() -> void:
 	var second = scene._spawn_ingredient(&"cherry")
 	second.position.x = 484.0
 	scene.select_ingredient()
-	# Gameplay should quit at frame end. This timeout runs only if it fails to quit.
-	await create_timer(0.2).timeout
+	# Gameplay shows Angry2 briefly, then quits. This timeout runs only if it fails to quit.
+	await create_timer(1.0).timeout
 	push_error("Second mistake did not close the game")
 	quit(1)
