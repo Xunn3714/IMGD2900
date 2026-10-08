@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" path="res://art/placeholders/thought_bubble.svg" id="thought_bubble"]
 [ext_resource type="Texture2D" path="res://art/drinks/orange_soda.png" id="orange_soda"]
 [ext_resource type="Texture2D" path="res://art/drinks/empty_cup.png" id="empty_cup"]
+[ext_resource type="Texture2D" path="res://art/background.png" id="background_art"]
 
 [sub_resource type="StyleBoxFlat" id="WindowStyle"]
 bg_color = Color(0.72, 0.83, 0.81, 1)
@@ -37,12 +38,15 @@ mouse_filter = 2
 script = ExtResource("1")
 customer_art = ExtResource("2")
 
-[node name="Background" type="ColorRect" parent="." unique_id=547804529]
+[node name="Background" type="TextureRect" parent="." unique_id=547804529]
+texture_filter = 1
 layout_mode = 0
 offset_right = 640.0
 offset_bottom = 360.0
 mouse_filter = 2
-color = Color(0.93, 0.89, 0.79, 1)
+texture = ExtResource("background_art")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="CustomerWindow" type="Panel" parent="." unique_id=1148728096]
 clip_contents = true
@@ -52,7 +56,7 @@ offset_top = 24.0
 offset_right = 480.0
 offset_bottom = 168.0
 mouse_filter = 2
-theme_override_styles/panel = SubResource("WindowStyle")
+theme_override_styles/panel = SubResource("CupStyle")
 
 [node name="Customer" type="TextureRect" parent="CustomerWindow" unique_id=37254788]
 texture_filter = 1
@@ -120,6 +124,7 @@ offset_bottom = 360.0
 mouse_filter = 2
 
 [node name="Rail" type="ColorRect" parent="Track" unique_id=1985548359]
+visible = false
 layout_mode = 0
 offset_left = 32.0
 offset_top = 198.0
