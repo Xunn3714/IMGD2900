@@ -1,7 +1,6 @@
 extends SceneTree
 const Rules = preload("res://scripts/round_rules.gd")
 var failures: Array[String] = []
-var exit_count: int = 0
 
 func _init() -> void:
 	call_deferred("_run")
@@ -53,9 +52,9 @@ func _run() -> void:
 	check(model.select(&"cherry") == Rules.Selection.GAME_OVER, "Second wrong item in the same drink ends session")
 	model.start_cup()
 	check(model.game_over and model.finished and model.mistakes == 2, "Cannot bypass game over")
+	model.restart_game()
+	check(not model.game_over and not model.finished and model.mistakes == 0, "Restart clears the game-over state")
 	var scene: Control = load("res://scenes/main.tscn").instantiate()
-	scene.quit_on_game_over = false
-	scene.exit_requested.connect(func(): exit_count += 1)
 	root.add_child(scene)
 	await process_frame
 	scene.set_process(false)
@@ -106,8 +105,16 @@ func _run() -> void:
 	check(scene.rules.selected.size() == 1 and scene.fruit_container.get_child_count() == 0 and not scene.drink.visible, "Visible fruit overlap is accepted and fruit-first leaves the cup empty")
 	check(scene.selection_slots[0].visible and scene.selection_slots[0].texture == scene.selection_icons[first_order], "Selected fruit shows its syrup beside the cup")
 	pick(scene, &"cherry")
-	check(scene.rules.mistakes == 1 and not scene.rules.finished and exit_count == 0, "First wrong item does not quit")
+	check(scene.rules.mistakes == 1 and not scene.rules.finished, "First wrong item keeps the current drink active")
 	check(scene.angry_overlay.visible and scene.angry_overlay.texture == scene.angry1_art and scene.angry_overlay.position == Vector2(75, 32) and scene.angry_overlay.size == Vector2(90, 84), "First mistake shows the enlarged Angry1 on the customer's face")
+	var original_customer_texture: Texture2D = scene.customer_image.texture
+	scene.customer_image.texture = load("res://art/customers/froish.png")
+	scene._show_anger(1)
+	check(scene.angry_overlay.position == Vector2(67, 32), "Frog moves Angry1 slightly left to align with its face")
+	scene._show_anger(2)
+	check(scene.angry_overlay.position == Vector2(122, 32), "Frog keeps Angry2 in the shared head position")
+	scene.customer_image.texture = original_customer_texture
+	scene._show_anger(1)
 	check(scene.selection_slots[1].visible and scene.selection_slots[1].texture == scene.cherry_syrup_art, "Wrong fruit also leaves its syrup beside the cup")
 	check(scene.get_node_or_null("Feedback") == null and scene.get_node_or_null("Mistakes") == null, "No action feedback or error-count text")
 	pick(scene, &"soda", 516.0)
@@ -140,16 +147,21 @@ func _run() -> void:
 	press(scene)
 	scene._clear_ingredients()
 	pick(scene, &"cherry")
-	check(not scene.rules.game_over and scene.rules.mistakes == 1 and exit_count == 0, "First mistake in this drink still continues")
+	check(not scene.rules.game_over and scene.rules.mistakes == 1, "First mistake in this drink still continues")
 	pick(scene, &"cherry")
-	check(scene.rules.game_over and exit_count == 1, "Second mistake in the same drink requests exit")
+	check(scene.rules.game_over and scene.rules.finished, "Second mistake pauses the game")
 	check(scene.angry_overlay.visible and scene.angry_overlay.texture == scene.angry2_art and scene.angry_overlay.position == Vector2(122, 32) and scene.angry_overlay.size == Vector2(40, 40), "Second mistake replaces Angry1 with the smaller Angry2 above the customer's head")
+	check(scene.result_panel.visible and scene.result_title.text == "Two mistakes!" and scene.result_retry.text == "SPACE: try again", "Game over shows the restart prompt in the lower-left result panel")
+	var failed_order: StringName = scene.current_fruit
+	scene.restart_delay = 0.0
 	press(scene)
-	check(scene.rules.game_over and exit_count == 1, "No restart or repeat exit after game over")
+	check(not scene.rules.game_over and not scene.rules.finished and scene.rules.mistakes == 0, "Space restarts after two mistakes")
+	check(scene.rounds_started == 1 and scene.current_ingredient_speed == scene.ingredient_speed, "Restart resets the difficulty progression")
+	check(scene.current_fruit != failed_order and not scene.result_panel.visible and not scene.angry_overlay.visible, "Restart creates a fresh order and clears the failure UI")
 	scene.queue_free()
 	await process_frame
 	if failures.is_empty():
-		print("ALPHA_SMOKE_PASS: rising speed, frequent soda, per-drink mistakes, recipes, art, input, exit")
+		print("ALPHA_SMOKE_PASS: rising speed, frequent soda, per-drink mistakes, recipes, art, input, restart")
 		quit(0)
 	else:
 		quit(1)

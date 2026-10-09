@@ -22,6 +22,13 @@ func start_cup(next_target: StringName = &"orange") -> void:
 	finished = false
 	timed_out = false
 
+func restart_game() -> void:
+	game_over = false
+	selected.clear()
+	mistakes = 0
+	finished = false
+	timed_out = false
+
 func select(kind: StringName) -> Selection:
 	if finished or game_over or not VALID_KINDS.has(kind):
 		return Selection.IGNORED

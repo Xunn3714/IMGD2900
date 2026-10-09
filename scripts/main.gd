@@ -1,6 +1,5 @@
 extends Control
 ## Space is the only gameplay key.
-signal exit_requested
 const Rules = preload("res://scripts/round_rules.gd")
 const INGREDIENT_SCENE: PackedScene = preload("res://scenes/ingredient.tscn")
 const TRACK_LEFT: float = 32.0
@@ -9,6 +8,8 @@ const TRACK_Y: float = 226.0
 const SELECTION_SLOT_START := Vector2(426.0, 270.0)
 const SELECTION_SLOT_SIZE := Vector2(44.0, 66.0)
 const SELECTION_SLOT_GAP: float = 6.0
+const FROG_CUSTOMER_PATH := "res://art/customers/froish.png"
+const FROG_ANGRY_FACE_OFFSET_X: float = -8.0
 
 @export_group("Playtest tuning")
 @export_range(60.0, 240.0, 5.0) var ingredient_speed: float = 120.0
@@ -41,17 +42,18 @@ const SELECTION_SLOT_GAP: float = 6.0
 @export var cherry_syrup_art: Texture2D = preload("res://art/drinks/cherry_syrup.png")
 @export var angry1_art: Texture2D = preload("res://art/customer_reactions/angry1.png")
 @export var angry2_art: Texture2D = preload("res://art/customer_reactions/angry2.png")
-@export_range(0.25, 2.0, 0.05) var game_over_exit_delay: float = 0.75
 
 @onready var hit_zone: ColorRect = $Track/HitZone
 @onready var ingredient_container: Node2D = $Track/Clip/Ingredients
 @onready var drink: TextureRect = $Cup/Drink
 @onready var fruit_container: Control = $Cup/Fruits
 @onready var order_image: TextureRect = $CustomerWindow/OrderBubble/DrinkImage
+@onready var customer_image: TextureRect = $CustomerWindow/Customer
 @onready var selection_slots: Array[TextureRect] = [$SelectedIngredients/Slot1, $SelectedIngredients/Slot2, $SelectedIngredients/Slot3]
 @onready var timer_label: Label = $TimeRemaining
 @onready var result_panel: Panel = $Result
 @onready var result_title: Label = $Result/Title
+@onready var result_retry: Label = $Result/Retry
 @onready var angry_overlay: TextureRect = $CustomerWindow/AngryOverlay
 
 var hit_center: float = 484.0
@@ -74,8 +76,6 @@ var restart_delay: float = 0.0
 var correct_pick_sound: AudioStream
 var wrong_pick_sound: AudioStream
 var pick_sound_player: AudioStreamPlayer
-# Test scripts intercept exit_requested; normal gameplay closes immediately.
-var quit_on_game_over: bool = true
 
 func _ready() -> void:
 	$CustomerWindow/Customer.texture = customer_art
@@ -192,9 +192,13 @@ func _process(delta: float) -> void:
 			item.queue_free()
 
 func _input(event: InputEvent) -> void:
-	if not event.is_action_pressed(&"add_ingredient") or rules.game_over:
+	if not event.is_action_pressed(&"add_ingredient"):
 		return
 	if event is InputEventKey and event.echo:
+		return
+	if rules.game_over:
+		if restart_delay == 0.0:
+			_restart_game()
 		return
 	if rules.finished:
 		if restart_delay == 0.0:
@@ -254,11 +258,8 @@ func select_ingredient() -> void:
 	if outcome == Rules.Selection.GAME_OVER:
 		_show_anger(2)
 		_clear_ingredients()
-		print("ALPHA_GAME_OVER: selected two wrong ingredients; quitting")
-		exit_requested.emit()
-		if quit_on_game_over:
-			var exit_timer := get_tree().create_timer(game_over_exit_delay)
-			exit_timer.timeout.connect(func(): get_tree().quit())
+		_show_game_over()
+		print("ALPHA_GAME_OVER: selected two wrong ingredients; waiting for restart")
 		return
 	if outcome == Rules.Selection.MISTAKE:
 		_show_anger(1)
@@ -301,7 +302,23 @@ func _show_result() -> void:
 	result_panel.visible = true
 	restart_delay = 0.4
 	result_title.text = "Order ready!" if rules.is_success() else "Time's up!"
+	result_retry.text = "SPACE: next cup"
 	print("ALPHA_CUP selected=%s mistakes=%d success=%s" % [rules.selected, rules.mistakes, rules.is_success()])
+
+func _show_game_over() -> void:
+	result_panel.visible = true
+	restart_delay = 0.4
+	result_title.text = "Two mistakes!"
+	result_retry.text = "SPACE: try again"
+
+func _restart_game() -> void:
+	rules.restart_game()
+	rounds_started = 0
+	hit_center = 484.0
+	hit_zone_direction = 1.0 if randf() < 0.5 else -1.0
+	start_round()
+	_randomize_hit_zone_speed()
+	hit_zone.position.x = hit_center - hit_width * 0.5
 
 func _moving_hit_zone(delta: float) -> void:
 	var min_center := TRACK_LEFT + hit_width * 0.5
@@ -340,7 +357,10 @@ func _show_anger(level: int) -> void:
 		angry_overlay.size = Vector2(40.0, 40.0)
 	else:
 		angry_overlay.texture = angry1_art
-		angry_overlay.position = Vector2(75.0, 32.0)
+		var face_x: float = 75.0
+		if customer_image.texture != null and customer_image.texture.resource_path == FROG_CUSTOMER_PATH:
+			face_x += FROG_ANGRY_FACE_OFFSET_X
+		angry_overlay.position = Vector2(face_x, 32.0)
 		angry_overlay.size = Vector2(90.0, 84.0)
 
 func _clear_ingredients() -> void:
