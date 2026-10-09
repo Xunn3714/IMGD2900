@@ -1,0 +1,292 @@
+[gd_scene format=3 uid="uid://b38j0w2fi6tkd"]
+
+[ext_resource type="Script" uid="uid://dkkve10tsc1dk" path="res://scripts/main.gd" id="1"]
+[ext_resource type="Texture2D" path="res://art/customers/blue_bear.png" id="2"]
+[ext_resource type="Texture2D" path="res://art/customers/brown_bear.png" id="customer_brown"]
+[ext_resource type="Texture2D" path="res://art/customers/bunny.png" id="customer_bunny"]
+[ext_resource type="Texture2D" path="res://art/customers/froish.png" id="customer_froish"]
+[ext_resource type="Script" path="res://scripts/customer_portrait.gd" id="customer_script"]
+[ext_resource type="Texture2D" path="res://art/placeholders/thought_bubble.svg" id="thought_bubble"]
+[ext_resource type="Texture2D" path="res://art/drinks/orange_soda.png" id="orange_soda"]
+[ext_resource type="Texture2D" path="res://art/drinks/empty_cup.png" id="empty_cup"]
+[ext_resource type="Texture2D" path="res://art/ui/recipe_book.png" id="recipe_book"]
+
+[sub_resource type="StyleBoxFlat" id="WindowStyle"]
+bg_color = Color(0.72, 0.83, 0.81, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.62, 0.64, 0.62, 1)
+
+[sub_resource type="StyleBoxFlat" id="BoxStyle"]
+bg_color = Color(1, 0.98, 0.92, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.24, 0.2, 1)
+
+[sub_resource type="StyleBoxEmpty" id="CupStyle"]
+
+[node name="Main" type="Control" unique_id=1307196657]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 360.0
+scale = Vector2(2, 2)
+mouse_filter = 2
+script = ExtResource("1")
+customer_art = ExtResource("2")
+
+[node name="Background" type="ColorRect" parent="." unique_id=547804529]
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+color = Color(0.93, 0.89, 0.79, 1)
+
+[node name="CustomerWindow" type="Panel" parent="." unique_id=1148728096]
+clip_contents = true
+layout_mode = 0
+offset_left = 32.0
+offset_top = 12.0
+offset_right = 480.0
+offset_bottom = 168.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("WindowStyle")
+
+[node name="Customer" type="TextureRect" parent="CustomerWindow" unique_id=37254788]
+texture_filter = 1
+layout_mode = 0
+offset_left = 70.0
+offset_top = 30.0
+offset_right = 180.0
+offset_bottom = 145.0
+mouse_filter = 2
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 5
+script = ExtResource("customer_script")
+portraits = Array[Texture2D]([ExtResource("2"), ExtResource("customer_brown"), ExtResource("customer_bunny"), ExtResource("customer_froish")])
+
+[node name="AngryOverlay" type="TextureRect" parent="CustomerWindow"]
+visible = false
+z_index = 1
+texture_filter = 1
+layout_mode = 0
+offset_left = 75.0
+offset_top = 32.0
+offset_right = 165.0
+offset_bottom = 116.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="OrderBubble" type="TextureRect" parent="CustomerWindow" unique_id=1104638358]
+layout_mode = 0
+offset_left = 230.0
+offset_top = 10.0
+offset_right = 430.0
+offset_bottom = 150.0
+mouse_filter = 2
+texture = ExtResource("thought_bubble")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DrinkImage" type="TextureRect" parent="CustomerWindow/OrderBubble"]
+layout_mode = 0
+offset_left = 74.0
+offset_top = 14.0
+offset_right = 126.0
+offset_bottom = 96.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+texture = ExtResource("orange_soda")
+
+[node name="Text" type="Label" parent="CustomerWindow/OrderBubble" unique_id=332785723]
+visible = false
+layout_mode = 0
+offset_left = 8.0
+offset_top = 12.0
+offset_right = 112.0
+offset_bottom = 60.0
+theme_override_colors/font_color = Color(0.3, 0.24, 0.2, 1)
+theme_override_font_sizes/font_size = 12
+text = "Orange soda"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RecipeBook" type="TextureRect" parent="."]
+texture_filter = 1
+layout_mode = 0
+offset_left = 500.0
+offset_top = 28.0
+offset_right = 620.0
+offset_bottom = 148.0
+mouse_filter = 2
+texture = ExtResource("recipe_book")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TimeRemaining" type="Label" parent="." unique_id=122281915]
+layout_mode = 0
+offset_left = 552.0
+offset_top = 173.0
+offset_right = 608.0
+offset_bottom = 195.0
+theme_override_colors/font_color = Color(0.3, 0.24, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "45s"
+horizontal_alignment = 2
+
+[node name="Track" type="Control" parent="." unique_id=2005452496]
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+
+[node name="Rail" type="ColorRect" parent="Track" unique_id=1985548359]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 198.0
+offset_right = 608.0
+offset_bottom = 254.0
+mouse_filter = 2
+color = Color(0.68, 0.68, 0.68, 1)
+
+[node name="HitZone" type="ColorRect" parent="Track" unique_id=479738376]
+layout_mode = 0
+offset_left = 452.0
+offset_top = 198.0
+offset_right = 516.0
+offset_bottom = 254.0
+mouse_filter = 2
+color = Color(0.34, 0.75, 0.4, 1)
+
+[node name="Clip" type="Control" parent="Track" unique_id=926768221]
+clip_contents = true
+anchors_preset = 0
+offset_left = 32.0
+offset_top = 198.0
+offset_right = 608.0
+offset_bottom = 254.0
+mouse_filter = 2
+
+[node name="Ingredients" type="Node2D" parent="Track/Clip" unique_id=205908685]
+position = Vector2(-32, -198)
+
+[node name="Cup" type="Panel" parent="." unique_id=978166556]
+layout_mode = 0
+offset_left = 360.0
+offset_top = 256.0
+offset_right = 420.0
+offset_bottom = 346.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("CupStyle")
+
+[node name="EmptyCup" type="TextureRect" parent="Cup"]
+texture_filter = 1
+layout_mode = 0
+offset_right = 60.0
+offset_bottom = 90.0
+mouse_filter = 2
+texture = ExtResource("empty_cup")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Drink" type="TextureRect" parent="Cup"]
+visible = false
+layout_mode = 0
+offset_right = 60.0
+offset_bottom = 90.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fruits" type="Control" parent="Cup" unique_id=857192538]
+anchors_preset = 0
+offset_right = 60.0
+offset_bottom = 90.0
+mouse_filter = 2
+
+[node name="SelectedIngredients" type="Control" parent="."]
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+
+[node name="Slot1" type="TextureRect" parent="SelectedIngredients"]
+visible = false
+texture_filter = 1
+layout_mode = 0
+offset_left = 426.0
+offset_top = 270.0
+offset_right = 470.0
+offset_bottom = 336.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot2" type="TextureRect" parent="SelectedIngredients"]
+visible = false
+texture_filter = 1
+layout_mode = 0
+offset_left = 476.0
+offset_top = 270.0
+offset_right = 520.0
+offset_bottom = 336.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot3" type="TextureRect" parent="SelectedIngredients"]
+visible = false
+texture_filter = 1
+layout_mode = 0
+offset_left = 526.0
+offset_top = 270.0
+offset_right = 570.0
+offset_bottom = 336.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Result" type="Panel" parent="." unique_id=2032501816]
+visible = false
+layout_mode = 0
+offset_left = 32.0
+offset_top = 266.0
+offset_right = 320.0
+offset_bottom = 309.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("BoxStyle")
+
+[node name="Title" type="Label" parent="Result" unique_id=1119401393]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 2.0
+offset_right = 278.0
+offset_bottom = 23.0
+theme_override_colors/font_color = Color(0.3, 0.24, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "Order ready!"
+
+[node name="Retry" type="Label" parent="Result" unique_id=1273342208]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 23.0
+offset_right = 278.0
+offset_bottom = 41.0
+theme_override_colors/font_color = Color(0.3, 0.24, 0.2, 1)
+theme_override_font_sizes/font_size = 12
+text = "SPACE: next cup"
+
+[node name="Counter" type="ColorRect" parent="." unique_id=729782356]
+layout_mode = 0
+offset_top = 347.0
+offset_right = 640.0
+offset_bottom = 354.0
+mouse_filter = 2
+color = Color(0.53, 0.47, 0.4, 1)
