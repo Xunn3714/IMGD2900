@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" path="res://art/placeholders/thought_bubble.svg" id="thought_bubble"]
 [ext_resource type="Texture2D" path="res://art/drinks/orange_soda.png" id="orange_soda"]
 [ext_resource type="Texture2D" path="res://art/drinks/empty_cup.png" id="empty_cup"]
+[ext_resource type="Texture2D" path="res://art/ui/recipe_book.png" id="recipe_book"]
 
 [sub_resource type="StyleBoxFlat" id="WindowStyle"]
 bg_color = Color(0.72, 0.83, 0.81, 1)
@@ -48,9 +49,9 @@ color = Color(0.93, 0.89, 0.79, 1)
 [node name="CustomerWindow" type="Panel" parent="." unique_id=1148728096]
 clip_contents = true
 layout_mode = 0
-offset_left = 80.0
+offset_left = 32.0
 offset_top = 12.0
-offset_right = 560.0
+offset_right = 480.0
 offset_bottom = 168.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("WindowStyle")
@@ -116,6 +117,18 @@ theme_override_font_sizes/font_size = 12
 text = "Orange soda"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="RecipeBook" type="TextureRect" parent="."]
+texture_filter = 1
+layout_mode = 0
+offset_left = 500.0
+offset_top = 28.0
+offset_right = 620.0
+offset_bottom = 148.0
+mouse_filter = 2
+texture = ExtResource("recipe_book")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="TimeRemaining" type="Label" parent="." unique_id=122281915]
 layout_mode = 0
